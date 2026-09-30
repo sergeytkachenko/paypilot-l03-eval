@@ -22,6 +22,7 @@ services:
     environment:
       <<: *eval-env
       SERVICE_URL: ${EVAL_STAND_URL:-http://host.docker.internal:8000}
+      MOCK_URL: ${EVAL_MOCK_URL:-http://host.docker.internal:1080}
     extra_hosts:
       - host.docker.internal:host-gateway
 
@@ -32,3 +33,13 @@ services:
     environment:
       <<: *eval-env
       SERVICE_URL: ${EVAL_STAND_URL:-http://127.0.0.1:8000}
+      MOCK_URL: ${EVAL_MOCK_URL:-http://127.0.0.1:1080}
+
+  llm-mock:
+    image: mockserver/mockserver:8.0.0
+    ports: ["1080:1080"]
+    environment:
+      MOCKSERVER_INITIALIZATION_JSON_PATH: /mock/expectations.json
+      MOCKSERVER_LOG_LEVEL: WARN
+    volumes:
+      - ./mock:/mock:ro

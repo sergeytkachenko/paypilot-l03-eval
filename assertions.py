@@ -18,7 +18,7 @@ NAME_TO_LEVEL = {
     "contains": 3, "regex": 3, "pattern": 3,
     "not_contains": 4, "absent": 4, "no_span": 4, "not_regex": 4,
     "tool_result_numeric": 2, "tool_result_flag": 1, "tool_call_count": 1,
-    "tool_grounded_numeric": 2,
+    "tool_grounded_numeric": 2, "tool_called_with": 1,
     "state_row": 1, "tool_sequence": 3,
     "similar": 5,
     "k_of_n": 6,

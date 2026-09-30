@@ -1,0 +1,8 @@
+{
+  "httpRequest": {
+    "method": "POST",
+    "path": ".*/chat/completions",
+    "body": {"type": "JSON_PATH", "jsonPath": "$.messages[-1:][?(@.role == 'tool' && @.tool_call_id == 'call_fx004' && @.content =~ /.*final_amount.*/)]"}
+  },
+  "times": {"atLeast": 1}
+}

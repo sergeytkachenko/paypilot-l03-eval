@@ -65,6 +65,9 @@ def expectation(case: dict) -> str:
         return f"answer does not contain {meta.get('forbidden')!r}"
     if name == "not_regex":
         return f"answer does not match {meta.get('forbidden_pattern')!r}"
+    if name == "tool_called_with":
+        args = ", ".join(f"{k}={v}" for k, v in (meta.get("args") or {}).items())
+        return f"{meta.get('tool')} called with {args}"
     if name == "exact_tool_calls":
         return f"tools called exactly {meta.get('expected_tool_calls', [])}"
     if name == "tool_call_count":

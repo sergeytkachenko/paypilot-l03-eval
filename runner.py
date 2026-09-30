@@ -82,6 +82,8 @@ def evaluate(case: dict, results: list[dict]) -> A.Verdict:
     if name == "tool_result_flag":
         return A.tool_result_flag(tree, meta["tool"], meta["field"],
                                   meta["expected_flag"])
+    if name == "tool_called_with":
+        return A.tool_called_with(tree, meta["tool"], meta["args"])
     if name == "tool_sequence":
         return A.tool_sequence(tree, meta.get("must_include"),
                                meta.get("must_exclude"),

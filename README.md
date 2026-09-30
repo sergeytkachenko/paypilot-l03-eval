@@ -130,6 +130,56 @@ curl -s -X PUT localhost:8000/api/_test/profile \
   -H 'Content-Type: application/json' -d '{"profile":"clean"}'
 ```
 
+## Мок моделі
+
+Частина 4 заняття перевіряє виклики інструментів без моделі. Між стендом і
+API моделі стає MockServer: стенд, як і завжди, шле запит на адресу
+провайдера, але йде через проксі (`HTTPS_PROXY`) і довіряє його
+сертифікату (`SSL_CERT_FILE`), а відповідає мок за сценарієм з
+`mock/expectations.json`. Код стенду не змінюється, ключ не потрібен:
+запит до моделі не доходить. Override-файл перемикає стенд на провайдер
+`openai` з фіктивним ключем, бо для мока провайдер — лише формат запиту.
+
+```bash
+cd ~/paypilot/l03
+docker compose up -d llm-mock
+cd ~/paypilot/paypilot-stand
+docker compose -f docker-compose.yml -f ../l03/mock/stand.override.yml up -d --force-recreate stand
+cd ~/paypilot/l03
+docker compose run --rm eval --set l03-mock --profile clean
+```
+
+Набір `sets/l03-mock.jsonl` — ті самі FX-004, LIM-003 і DIS-006 плюс
+FX-004-CALL: перевірка `tool_called_with`, що стенд виконав саме той
+виклик, який повернула «модель», з тими самими аргументами. На `clean` має
+бути 4/4, на `lesson-03` — 1/4: виклик правильний, результати інструментів
+ні.
+
+Що стенд надіслав моделі, показує журнал мока, а `verify` перевіряє
+взаємодію: чи повернув стенд результат інструмента у другому запиті.
+
+```bash
+docker compose run --rm eval python mock/journal.py
+curl -s -o /dev/null -w '%{http_code}\n' -X PUT localhost:1080/mockserver/verify \
+  -H 'Content-Type: application/json' -d @mock/verify-fx-004.json
+```
+
+`202` — перевірка пройшла; інакше MockServer друкує, що очікував і що
+отримав. Повернути справжню модель:
+
+```bash
+cd ~/paypilot/paypilot-stand
+docker compose up -d --force-recreate stand
+cd ~/paypilot/l03
+docker compose stop llm-mock
+```
+
+Сертифікат `mock/mockserver-ca.pem` — стандартний CA MockServer, його
+приватний ключ опублікований у репозиторії MockServer, тому цей мок
+годиться лише для локального стенду. `/health` за проксі й далі показує
+`"provider":"openai"`: чи стенд за моком, видно з журналу мока, а не зі
+стенду.
+
 ## Змінні ранера
 
 Те саме, що прапорці, але через оточення; прапорець сильніший за змінну.

@@ -1,0 +1,138 @@
+[
+  {
+    "id": "fx-004-tool-call",
+    "httpRequest": {
+      "method": "POST",
+      "path": ".*/chat/completions",
+      "body": {"type": "JSON_PATH", "jsonPath": "$.messages[-1:][?(@.role == 'user' && @.content =~ /.*Convert 2000 EUR to USD.*/)]"}
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {"Content-Type": ["application/json"]},
+      "body": {"type": "JSON", "json": {
+        "id": "chatcmpl-mock-fx004", "object": "chat.completion", "created": 0, "model": "mock-llm",
+        "choices": [{"index": 0, "finish_reason": "tool_calls", "message": {
+          "role": "assistant", "content": null,
+          "tool_calls": [{"id": "call_fx004", "type": "function", "function": {
+            "name": "quote_fx",
+            "arguments": "{\"customer_id\": \"CUS-0007\", \"amount\": 2000, \"from_currency\": \"EUR\", \"to_currency\": \"USD\"}"}}]}}],
+        "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+      }}
+    }
+  },
+  {
+    "id": "fx-004-answer",
+    "httpRequest": {
+      "method": "POST",
+      "path": ".*/chat/completions",
+      "body": {"type": "JSON_PATH", "jsonPath": "$.messages[-1:][?(@.role == 'tool' && @.tool_call_id == 'call_fx004')]"}
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {"Content-Type": ["application/json"]},
+      "body": {"type": "JSON", "json": {
+        "id": "chatcmpl-mock-fx004-answer", "object": "chat.completion", "created": 0, "model": "mock-llm",
+        "choices": [{"index": 0, "finish_reason": "stop", "message": {
+          "role": "assistant",
+          "content": "For 2000 EUR you will receive 2154.35 USD (mid rate 1.086957, tier 2 spread 0.9%)."}}],
+        "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+      }}
+    }
+  },
+  {
+    "id": "lim-003-tool-call",
+    "httpRequest": {
+      "method": "POST",
+      "path": ".*/chat/completions",
+      "body": {"type": "JSON_PATH", "jsonPath": "$.messages[-1:][?(@.role == 'user' && @.content =~ /.*CUS-0010.*monthly transfer limit.*/)]"}
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {"Content-Type": ["application/json"]},
+      "body": {"type": "JSON", "json": {
+        "id": "chatcmpl-mock-lim003", "object": "chat.completion", "created": 0, "model": "mock-llm",
+        "choices": [{"index": 0, "finish_reason": "tool_calls", "message": {
+          "role": "assistant", "content": null,
+          "tool_calls": [{"id": "call_lim003", "type": "function", "function": {
+            "name": "check_limits",
+            "arguments": "{\"customer_id\": \"CUS-0010\"}"}}]}}],
+        "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+      }}
+    }
+  },
+  {
+    "id": "lim-003-answer",
+    "httpRequest": {
+      "method": "POST",
+      "path": ".*/chat/completions",
+      "body": {"type": "JSON_PATH", "jsonPath": "$.messages[-1:][?(@.role == 'tool' && @.tool_call_id == 'call_lim003')]"}
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {"Content-Type": ["application/json"]},
+      "body": {"type": "JSON", "json": {
+        "id": "chatcmpl-mock-lim003-answer", "object": "chat.completion", "created": 0, "model": "mock-llm",
+        "choices": [{"index": 0, "finish_reason": "stop", "message": {
+          "role": "assistant",
+          "content": "Here is the current status of your transfer limits."}}],
+        "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+      }}
+    }
+  },
+  {
+    "id": "dis-006-tool-call",
+    "httpRequest": {
+      "method": "POST",
+      "path": ".*/chat/completions",
+      "body": {"type": "JSON_PATH", "jsonPath": "$.messages[-1:][?(@.role == 'user' && @.content =~ /.*TX-0402.*disputed.*/)]"}
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {"Content-Type": ["application/json"]},
+      "body": {"type": "JSON", "json": {
+        "id": "chatcmpl-mock-dis006", "object": "chat.completion", "created": 0, "model": "mock-llm",
+        "choices": [{"index": 0, "finish_reason": "tool_calls", "message": {
+          "role": "assistant", "content": null,
+          "tool_calls": [{"id": "call_dis006", "type": "function", "function": {
+            "name": "check_dispute_eligibility",
+            "arguments": "{\"transaction_id\": \"TX-0402\", \"reason_code\": \"duplicate_charge\"}"}}]}}],
+        "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+      }}
+    }
+  },
+  {
+    "id": "dis-006-answer",
+    "httpRequest": {
+      "method": "POST",
+      "path": ".*/chat/completions",
+      "body": {"type": "JSON_PATH", "jsonPath": "$.messages[-1:][?(@.role == 'tool' && @.tool_call_id == 'call_dis006')]"}
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {"Content-Type": ["application/json"]},
+      "body": {"type": "JSON", "json": {
+        "id": "chatcmpl-mock-dis006-answer", "object": "chat.completion", "created": 0, "model": "mock-llm",
+        "choices": [{"index": 0, "finish_reason": "stop", "message": {
+          "role": "assistant",
+          "content": "Here is the eligibility check for transaction TX-0402."}}],
+        "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+      }}
+    }
+  },
+  {
+    "id": "no-expectation-matched",
+    "priority": -10,
+    "httpRequest": {"method": "POST", "path": ".*/chat/completions"},
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {"Content-Type": ["application/json"]},
+      "body": {"type": "JSON", "json": {
+        "id": "chatcmpl-mock-unmatched", "object": "chat.completion", "created": 0, "model": "mock-llm",
+        "choices": [{"index": 0, "finish_reason": "stop", "message": {
+          "role": "assistant",
+          "content": "MOCK: no expectation matched this request."}}],
+        "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}
+      }}
+    }
+  }
+]

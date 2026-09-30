@@ -1,0 +1,11 @@
+services:
+  stand:
+    environment:
+      - LLM_PROVIDER=openai
+      - OPENAI_API_KEY=mock
+      - HTTPS_PROXY=http://host.docker.internal:1080
+      - SSL_CERT_FILE=/certs/mockserver-ca.pem
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    volumes:
+      - ${L03_DIR:-../l03}/mock/mockserver-ca.pem:/certs/mockserver-ca.pem:ro
