@@ -93,7 +93,7 @@ def _parse(raw: str) -> dict:
 
 def judge(question: str, answer: str, rubric: str,
           model: str | None = None, temperature: float | None = None) -> dict:
-    model = model or os.environ.get("JUDGE_MODEL", "claude-haiku-4-5")
+    model = model or os.environ.get("JUDGE_MODEL") or "claude-haiku-5-5"
     prompt = (f"CUSTOMER QUESTION:\n{question}\n\n"
               f"AGENT ANSWER:\n{answer}\n\n"
               f"RUBRIC:\n{rubric}\n\nJSON:")

@@ -20,7 +20,7 @@ from loader import load, set_hash, summarise
 SETS_DIR = HERE / "sets"
 REPORTS_DIR = HERE / "reports"
 RUBRIC_VERSION = os.environ.get("RUBRIC_VERSION", "rubric.v1")
-JUDGE_MODEL = os.environ.get("JUDGE_MODEL", "not-used")
+JUDGE_MODEL = os.environ.get("JUDGE_MODEL") or "not-used"
 
 
 
