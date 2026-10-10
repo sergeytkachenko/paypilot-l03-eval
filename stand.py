@@ -34,15 +34,17 @@ def _call(method: str, path: str, payload=None, timeout=120):
 
 
 
-def chat(message: str, session_id: str | None = None) -> dict:
-    return _call("POST", "/chat", {"message": message, "session_id": session_id})
+def chat(message: str, session_id: str | None = None,
+         customer_id: str | None = None) -> dict:
+    return _call("POST", "/chat", {"message": message, "session_id": session_id,
+                                   "customer_id": customer_id})
 
 
-def dialog(turns: list[str]) -> list[dict]:
+def dialog(turns: list[str], customer_id: str | None = None) -> list[dict]:
     ""
     out, sid = [], None
     for text in turns:
-        res = chat(text, sid)
+        res = chat(text, sid, customer_id)
         sid = res["session_id"]
         out.append(res)
     return out

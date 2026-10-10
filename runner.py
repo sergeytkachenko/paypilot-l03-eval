@@ -144,12 +144,13 @@ def run_case(case: dict) -> dict:
     for _ in range(runs):
         stand.reset()
         t0 = time.time()
+        customer = (case.get("context") or {}).get("customer_id")
         if case.get("turns"):
             turns = [t["content"] for t in case["turns"] if t["role"] == "user"]
-            outs = stand.dialog(turns)
+            outs = stand.dialog(turns, customer)
             last = outs[-1]
         else:
-            last = stand.chat(case["input"])
+            last = stand.chat(case["input"], customer_id=customer)
         results.append({
             "answer": last.get("answer", ""),
             "usage": last.get("usage", {"input_tokens": 0, "output_tokens": 0}),

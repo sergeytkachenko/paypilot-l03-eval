@@ -142,13 +142,13 @@ def dispute_cases():
     ""
     out = []
     plan = [
-        ("DIS-001", "TX-0401", date(2026, 7, 20), "duplicate_charge", False),
-        ("DIS-002", "TX-0402", date(2026, 7, 14), "duplicate_charge", False),
-        ("DIS-003", "TX-0403", date(2026, 9, 1), "duplicate_charge", False),
-        ("DIS-004", "TX-0601", date(2026, 8, 16), "goods_not_received", True),
-        ("DIS-005", "TX-0701", date(2026, 9, 11), "fraud_card_not_present", False),
+        ("DIS-001", "CUS-0004", "TX-0401", date(2026, 7, 20), "duplicate_charge", False),
+        ("DIS-002", "CUS-0004", "TX-0402", date(2026, 7, 14), "duplicate_charge", False),
+        ("DIS-003", "CUS-0004", "TX-0403", date(2026, 9, 1), "duplicate_charge", False),
+        ("DIS-004", "CUS-0006", "TX-0601", date(2026, 8, 16), "goods_not_received", True),
+        ("DIS-005", "CUS-0007", "TX-0701", date(2026, 9, 11), "fraud_card_not_present", False),
     ]
-    for cid, tx, tx_date, reason, hold in plan:
+    for cid, cust, tx, tx_date, reason, hold in plan:
         r = disputes.check(reason, tx_date, "settled", AS_OF, hold)
         window = policy.DISPUTE_WINDOWS_DAYS[reason]
         out.append(case(
@@ -161,7 +161,8 @@ def dispute_cases():
              "source": "engine", "failure_mode": "wrong_window",
              "severity": "high", "runs": 1, "added_in": "l03",
              "gate": "daily",
-             "context": {"transaction_id": tx, "reason_code": reason},
+             "context": {"customer_id": cust, "transaction_id": tx,
+                         "reason_code": reason},
              "engine_call": f"policy.DISPUTE_WINDOWS_DAYS[{reason!r}]",
              "why_this_level": "the window is a small integer the answer must "
                                "carry — level 3 substring, per the L03 ladder"}))
@@ -178,7 +179,8 @@ def dispute_cases():
                  "failure_mode": "engine_seam" if hold else "wrong_window",
                  "severity": "critical", "runs": 1, "added_in": "l03",
                  "gate": "daily",
-                 "context": {"transaction_id": tx, "reason_code": reason},
+                 "context": {"customer_id": cust, "transaction_id": tx,
+                             "reason_code": reason},
                  "engine_call": (f"disputes.check({reason!r}, {tx_date}, "
                                  f"'settled', {AS_OF}, "
                                  f"compliance_hold={hold}).eligible is False"),
