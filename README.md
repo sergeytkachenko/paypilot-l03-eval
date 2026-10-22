@@ -227,6 +227,30 @@ UTF-8.
 `no customer is signed in for this session`. Пишеш свій кейс про рахунок,
 ліміт чи обмін — додай йому `"context": {"customer_id": "CUS-…"}`.
 
+## Бюджет (`assertion: budget`, L08)
+
+Кейс із `"assertion": "budget"` перевіряє не відповідь, а ціну діалогу:
+
+```json
+"additional_metadata": {
+  "layer": "memory", "oracle": "human", "assertion": "budget",
+  "severity": "medium", "source": "baseline 22.10",
+  "budget": {"tokens_total": 66000, "latency_ms": 35000,
+             "identical_tool_calls_max": 1},
+  "runs": 5, "gate": "release"}
+```
+
+- `tokens_total` — вхідні й вихідні токени **усіх кроків** діалогу одного
+  прогону (з `usage` відповідей `/chat`). Порівнюється медіана прогонів.
+- `latency_ms` — час усього діалогу одного прогону. Порівнюється медіана.
+- `identical_tool_calls_max` — скільки викликів з **однаковими назвою й
+  аргументами** може бути в одному кроці. Береться найгірший крок
+  найгіршого прогону: петля повторів детермінована, тут медіана не потрібна.
+
+Пороги не з повітря: проженіть кейс на `--profile clean` з `runs: 5`, візьміть
+медіану з вердикту (`per run: tokens […]`) і додайте запас. У звіті вердикт
+показує числа кожного прогону.
+
 ## Звіти
 
 Кожен прогін пише JSON-звіт у `reports/` цього каталогу:

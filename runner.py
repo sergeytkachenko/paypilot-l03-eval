@@ -4,6 +4,7 @@ import os
 import sys
 import time
 from datetime import datetime, timezone
+from statistics import median
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -112,28 +113,30 @@ def evaluate(case: dict, results: list[dict]) -> A.Verdict:
 def _budget(meta: dict, results: list[dict]) -> A.Verdict:
     ""
     budget = meta.get("budget", {})
-    tokens = sum(r["usage"]["input_tokens"] + r["usage"]["output_tokens"]
-                 for r in results)
-    identical = 0
-    for r in results:
-        names = [c["name"] for c in stand.tool_calls(r.get("trace") or {})]
-        identical = max(identical,
-                        max((names.count(n) for n in set(names)), default=0))
+    tokens = [r["dialog_tokens"] for r in results]
+    identical = [max((_identical_calls(t) for t in r["step_traces"]), default=0)
+                 for r in results]
+    latency = [r.get("latency_ms", 0) for r in results]
     problems = []
-    if "tokens_total" in budget and tokens > budget["tokens_total"]:
-        problems.append(f"tokens {tokens} > {budget['tokens_total']}")
+    if "tokens_total" in budget and median(tokens) > budget["tokens_total"]:
+        problems.append(f"median tokens {median(tokens)} > {budget['tokens_total']}")
     if ("identical_tool_calls_max" in budget
-            and identical > budget["identical_tool_calls_max"]):
-        problems.append(f"identical tool calls {identical} > "
+            and max(identical) > budget["identical_tool_calls_max"]):
+        problems.append(f"identical tool calls {max(identical)} > "
                         f"{budget['identical_tool_calls_max']}")
-    if "latency_ms" in budget:
-        worst = max((r.get("latency_ms", 0) for r in results), default=0)
-        if worst > budget["latency_ms"]:
-            problems.append(f"latency {worst}ms > {budget['latency_ms']}ms")
+    if "latency_ms" in budget and median(latency) > budget["latency_ms"]:
+        problems.append(f"median latency {median(latency)}ms > {budget['latency_ms']}ms")
     ok = not problems
+    seen = (f"per run: tokens {tokens}, identical calls {identical}, "
+            f"latency {latency}ms")
     return A.Verdict(ok, 2, "budget",
-                     "; ".join(problems) if problems else
-                     f"tokens {tokens}, identical calls {identical}")
+                     "; ".join(problems) + f" ({seen})" if problems else seen)
+
+
+def _identical_calls(tree: dict) -> int:
+    calls = [(c["name"], json.dumps(c["arguments"], sort_keys=True))
+             for c in stand.tool_calls(tree)]
+    return max((calls.count(c) for c in set(calls)), default=0)
 
 
 
@@ -148,14 +151,22 @@ def run_case(case: dict) -> dict:
         if case.get("turns"):
             turns = [t["content"] for t in case["turns"] if t["role"] == "user"]
             outs = stand.dialog(turns, customer)
-            last = outs[-1]
         else:
-            last = stand.chat(case["input"], customer_id=customer)
+            outs = [stand.chat(case["input"], customer_id=customer)]
+        latency_ms = int((time.time() - t0) * 1000)
+        last = outs[-1]
+        step_traces = ([stand.trace(o["request_id"]) for o in outs]
+                       if meta["assertion"] == "budget"
+                       else [stand.trace(last["request_id"])])
         results.append({
             "answer": last.get("answer", ""),
             "usage": last.get("usage", {"input_tokens": 0, "output_tokens": 0}),
-            "latency_ms": int((time.time() - t0) * 1000),
-            "trace": stand.trace(last["request_id"]),
+            "dialog_tokens": sum((o.get("usage") or {}).get("input_tokens", 0)
+                                 + (o.get("usage") or {}).get("output_tokens", 0)
+                                 for o in outs),
+            "latency_ms": latency_ms,
+            "trace": step_traces[-1],
+            "step_traces": step_traces,
         })
     try:
         verdict = evaluate(case, results)
