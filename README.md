@@ -251,6 +251,15 @@ UTF-8.
 медіану з вердикту (`per run: tokens […]`) і додайте запас. У звіті вердикт
 показує числа кожного прогону.
 
+Бюджет на токени й час зазвичай має `gate: release`, а ранер без `--gate`
+бере лише `daily`-кейси. Тому бюджетні кейси запускайте з `--gate release`
+або `--gate all`, інакше їх не буде у звіті:
+
+```bash
+docker compose run --rm eval --set l05_dialogs --only C07-BUDGET --gate release --profile clean
+docker compose run --rm eval --set l05_dialogs --gate all --profile lesson-08
+```
+
 ## Звіти
 
 Кожен прогін пише JSON-звіт у `reports/` цього каталогу:
