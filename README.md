@@ -111,6 +111,7 @@ PowerShell його показує `$LASTEXITCODE`. Читай його одра
 | Прапорець | Що робить |
 |---|---|
 | `--profile clean` | перемикає стенд на профіль перед прогоном |
+| `--settings '{"model": "google/gemini-2.5-flash"}'` | заголовок `X-Stand-Settings` на кожен запит `/chat` набору: `model`, `reasoning`, `summarize_after`, `top_k` тощо |
 | `--only FX-004,LIM-003` | лише названі кейси |
 | `--set l03` | який набір читати: `sets/<назва>.jsonl` |
 | `--gate daily` | кейси якого гейта: `daily`, `release` або `all`; за замовчуванням `daily` |

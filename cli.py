@@ -1,4 +1,5 @@
 import argparse
+import json
 import os
 import subprocess
 import sys
@@ -14,6 +15,9 @@ def parse(argv):
         description="Run the L03 set against the PayPilot stand.")
     p.add_argument("--profile", metavar="NAME",
                    help="switch the stand to this profile before the run")
+    p.add_argument("--settings", metavar="JSON",
+                   help="X-Stand-Settings for every /chat request, "
+                        "e.g. '{\"model\": \"google/gemini-2.5-flash\"}'")
     p.add_argument("--only", metavar="IDS",
                    help="run only these cases, comma-separated")
     p.add_argument("--set", dest="set_name", metavar="NAME",
@@ -33,6 +37,16 @@ def main(argv):
         return subprocess.call([program, *argv[1:]])
 
     args = parse(argv)
+    if args.settings is not None:
+        try:
+            parsed = json.loads(args.settings)
+        except json.JSONDecodeError as e:
+            print(f"--settings is not valid JSON: {e.msg}")
+            return 2
+        if not isinstance(parsed, dict):
+            print("--settings must be a JSON object")
+            return 2
+        os.environ["STAND_SETTINGS"] = json.dumps(parsed)
     if args.only is not None:
         os.environ["CASE"] = args.only
     if args.set_name is not None:

@@ -15,11 +15,11 @@ class StandError(RuntimeError):
     pass
 
 
-def _call(method: str, path: str, payload=None, timeout=120):
+def _call(method: str, path: str, payload=None, timeout=120, headers=None):
     data = json.dumps(payload).encode("utf-8") if payload is not None else None
     req = urllib.request.Request(
         BASE + path, data=data, method=method,
-        headers={"Content-Type": "application/json"})
+        headers={"Content-Type": "application/json", **(headers or {})})
     try:
         with _opener.open(req, timeout=timeout) as r:
             body = r.read().decode("utf-8")
@@ -36,8 +36,10 @@ def _call(method: str, path: str, payload=None, timeout=120):
 
 def chat(message: str, session_id: str | None = None,
          customer_id: str | None = None) -> dict:
+    settings = os.environ.get("STAND_SETTINGS", "")
+    headers = {"X-Stand-Settings": settings} if settings else None
     return _call("POST", "/chat", {"message": message, "session_id": session_id,
-                                   "customer_id": customer_id})
+                                   "customer_id": customer_id}, headers=headers)
 
 
 def dialog(turns: list[str], customer_id: str | None = None) -> list[dict]:
